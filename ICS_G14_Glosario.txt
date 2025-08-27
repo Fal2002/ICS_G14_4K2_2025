@@ -1,0 +1,6 @@
+ICS:	Ingeniería y calidad de Software
+G14:	Grupo 14
+MB:	Material bibliográfico
+PC:	Presentaciones de clases
+TIG:	Trabajo de investigación grupal
+ext:	Extensión de archivo
