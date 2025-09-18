@@ -1,6 +1,9 @@
-ICS:	Ingeniería y calidad de Software
-G14:	Grupo 14
-MB:	Material bibliográfico
-PC:	Presentaciones de clases
-TIG:	Trabajo de investigación grupal
-ext:	Extensión de archivo
+ext:	    Extensión de archivo
+G14:	    Grupo 14
+ICS:	    Ingeniería y calidad de Software
+MB:	        Material bibliográfico
+PC:	        Presentaciones de clases
+SCM:        Software Configuration Management
+Template:   Plantilla
+TIG:	    Trabajo de investigación grupal
+TP_N:       Trabajo práctico número "N".
