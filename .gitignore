@@ -1,0 +1,114 @@
+# =========================
+# Archivos de Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de entorno virtual
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Archivos de configuración local
+*.env
+*.ini
+*.cfg
+*.local
+*.toml
+
+# Archivos de logs y bases de datos
+*.log
+*.sqlite3
+*.db
+
+# Archivos de compilación
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+# Archivos de instalación
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Archivos de Jupyter Notebooks
+.ipynb_checkpoints
+
+# Archivos de PyInstaller
+# (usualmente generados por un .spec)
+*.manifest
+*.spec
+
+# Archivos de testing / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Archivos de traducción
+*.mo
+*.pot
+
+# Archivos de documentación
+docs/_build/
+doc/_build/
+
+# Archivos de IDEs
+.vscode/
+.idea/
+.spyderproject
+.spyproject
+.ropeproject
+.pydevproject
+
+# Archivos de macOS y Linux
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Archivos temporales del sistema
+~$*
+*.bak
+*.tmp
+*.temp
+
+# Archivos de herramientas de análisis
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# Archivos de proyectos Docker / CI
+*.pid
+*.seed
+celerybeat-schedule
+*.pid.lock
+
+# =========================
+# Fin del .gitignore
+# =========================
