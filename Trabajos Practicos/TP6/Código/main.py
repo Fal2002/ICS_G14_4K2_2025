@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+
 from models import GestorActividades, Visitante
 
 # Paleta de colores
@@ -441,7 +442,6 @@ class InscripcionApp:
         resultado = self.gestor.registrar_inscripcion(
             nombre_actividad=nombre_actividad,
             horario=horario,
-            cantidad_visitantes=len(visitantes),
             visitantes=visitantes,
             acepta_terminos=acepta_terminos,
         )

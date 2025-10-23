@@ -1,4 +1,5 @@
 import pytest
+
 from models import Actividad, Visitante, GestorActividades, ServicioInscripcion
 
 
@@ -18,7 +19,9 @@ def gestor():
 @pytest.fixture
 def actividad_con_cupos():
     """Fixture que proporciona una actividad con cupos disponibles"""
-    return Actividad(nombre="Tirolesa", horarios={"10": 10}, requiere_talla=True)
+    return Actividad(
+        nombre="Tirolesa", horarios={"10": 10, "11": 2}, requiere_talla=True
+    )
 
 
 @pytest.fixture
@@ -88,7 +91,6 @@ class TestInscripcionActividad:
         resultado = gestor.registrar_inscripcion(
             nombre_actividad="ActividadInexistente",
             horario="10",
-            cantidad_visitantes=len(visitantes),
             visitantes=visitantes,
             acepta_terminos=True,
         )
@@ -166,7 +168,7 @@ class TestInscripcionActividad:
         assert actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 8
         print("✓ Test pasado: Inscripción múltiple exitosa y cupos actualizados")
 
-    def test_inscripcion_fallida_sin_cupo(
+    def test_inscripcion_fallida_sin_cupo_un_visitante(
         self, servicio_inscripcion, actividad_sin_cupos, visitante_completo
     ):
         # ========== ACT ==========
@@ -190,6 +192,47 @@ class TestInscripcionActividad:
         assert "cupos" in resultado.mensaje.lower()
         assert actividad_sin_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 0
         print("✓ Test pasado: Inscripción rechazada por falta de cupos")
+
+    def test_inscripcion_fallida_por_cupo_insuficiente_para_multiples_visitantes(
+        self, servicio_inscripcion, actividad_con_cupos
+    ):
+        # ========== ARRANGE ==========
+        print(
+            "\n--- Test: Inscripción fallida por cupo insuficiente para múltiples visitantes ---"
+        )
+        visitantes = [
+            Visitante(nombre="Ana Gómez", dni=87654321, edad=28, talla_vestimenta="S"),
+            Visitante(
+                nombre="Luis Martínez", dni=11223344, edad=35, talla_vestimenta="L"
+            ),
+            Visitante(
+                nombre="Carlos Ruiz", dni=55667788, edad=22, talla_vestimenta="M"
+            ),
+        ]
+        print(f"Actividad: {actividad_con_cupos.nombre}, Horario: 10:00")
+        print(
+            f"Cupos disponibles antes: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('11')}"
+        )
+        print(f"Cantidad de visitantes: {len(visitantes)}")
+        for v in visitantes:
+            print(f"  - {v.nombre} (DNI: {v.dni}, Talla: {v.talla_vestimenta})")
+
+        # ========== ACT ==========
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_con_cupos,
+            horario="11",
+            visitantes=visitantes,
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is False
+        assert "cupos" in resultado.mensaje.lower()
+        assert (
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+        )
+        print("✓ Test pasado: Inscripción rechazada por cupo insuficiente")
 
     def test_inscripcion_sin_talla_para_actividad_con_talla_requerida(
         self, servicio_inscripcion, actividad_con_cupos, visitante_sin_talla
@@ -411,3 +454,113 @@ class TestInscripcionActividad:
             actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
         )
         print("✓ Test pasado: Inscripción rechazada por falta de visitantes")
+
+    def test_inscripcion_con_nombre_invalido(
+        self, servicio_inscripcion, actividad_con_cupos
+    ):
+        # ========== ARRANGE ==========
+        print("\n--- Test: Inscripción con nombre de visitante inválido ---")
+        visitante_nombre_invalido = Visitante(
+            nombre="Juan123", dni=12345678, edad=30, talla_vestimenta="M"
+        )
+        print(f"Visitante con nombre inválido: {visitante_nombre_invalido.nombre}")
+
+        # ========== ACT ==========
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_con_cupos,
+            horario="10",
+            visitantes=[visitante_nombre_invalido],
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is False
+        assert "nombre válido" in resultado.mensaje.lower()
+        assert (
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+        )
+        print("✓ Test pasado: Inscripción rechazada por nombre inválido")
+
+    def test_inscripcion_con_dni_invalido(
+        self, servicio_inscripcion, actividad_con_cupos
+    ):
+        # ========== ARRANGE ==========
+        print("\n--- Test: Inscripción con DNI de visitante inválido (negativo) ---")
+        visitante_dni_invalido = Visitante(
+            nombre="Juan Perez", dni=-12345678, edad=30, talla_vestimenta="M"
+        )
+        print(f"Visitante con DNI inválido: {visitante_dni_invalido.dni}")
+
+        # ========== ACT ==========
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_con_cupos,
+            horario="10",
+            visitantes=[visitante_dni_invalido],
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is False
+        assert "dni válido" in resultado.mensaje.lower()
+        assert (
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+        )
+        print("✓ Test pasado: Inscripción rechazada por DNI inválido")
+
+    def test_inscripcion_con_edad_invalida(
+        self, servicio_inscripcion, actividad_con_cupos
+    ):
+        # ========== ARRANGE ==========
+        print("\n--- Test: Inscripción con edad de visitante inválida (cero) ---")
+        visitante_edad_invalida = Visitante(
+            nombre="Juan Perez", dni=12345678, edad=0, talla_vestimenta="M"
+        )
+        print(f"Visitante con edad inválida: {visitante_edad_invalida.edad}")
+
+        # ========== ACT ==========
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_con_cupos,
+            horario="10",
+            visitantes=[visitante_edad_invalida],
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is False
+        assert "edad válida" in resultado.mensaje.lower()
+        assert (
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+        )
+        print("✓ Test pasado: Inscripción rechazada por edad inválida")
+
+    def test_inscripcion_con_talla_invalida(
+        self, servicio_inscripcion, actividad_con_cupos
+    ):
+        # ========== ARRANGE ==========
+        print("\n--- Test: Inscripción con talla de vestimenta inválida ---")
+        visitante_talla_invalida = Visitante(
+            nombre="Juan Perez", dni=12345678, edad=30, talla_vestimenta="XXL"
+        )
+        print(
+            f"Visitante con talla inválida: {visitante_talla_invalida.talla_vestimenta}"
+        )
+
+        # ========== ACT ==========
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_con_cupos,
+            horario="10",
+            visitantes=[visitante_talla_invalida],
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is False
+        assert "talla de vestimenta" in resultado.mensaje.lower()
+        assert (
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+        )
+        print("✓ Test pasado: Inscripción rechazada por talla inválida")

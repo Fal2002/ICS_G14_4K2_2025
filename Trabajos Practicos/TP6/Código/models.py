@@ -202,7 +202,6 @@ class Actividad:
         self.horarios = horarios
         self.requiere_talla = requiere_talla
         self.inscripciones_por_horario = {h: [] for h in horarios}
-        self._servicio_inscripcion = ServicioInscripcion()
 
     def registrar_inscripcion(self, horario: str, visitantes: List[Visitante]) -> None:
         """
@@ -335,7 +334,6 @@ class GestorActividades:
         self,
         nombre_actividad: str,
         horario: str,
-        cantidad_visitantes: int,
         visitantes: List[Visitante],
         acepta_terminos: bool,
     ) -> ResultadoInscripcion:
@@ -346,7 +344,6 @@ class GestorActividades:
         Args:
             nombre_actividad: Nombre de la actividad
             horario: Horario solicitado
-            cantidad_visitantes: Cantidad de visitantes
             visitantes: Lista de visitantes
             acepta_terminos: Si se aceptaron los términos y condiciones
 
