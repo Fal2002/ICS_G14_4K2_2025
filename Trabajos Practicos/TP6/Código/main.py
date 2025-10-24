@@ -304,7 +304,7 @@ class InscripcionApp:
         if nombre_actividad:
             actividad = self.gestor.obtener_actividad(nombre_actividad)
             if actividad:
-                requiere_talla = actividad.requiere_talla
+                requiere_talla = actividad.requiere_talla_vestimenta()
 
         # Crear campos para cada visitante
         for i in range(num_visitantes):
@@ -538,7 +538,10 @@ class ListadoApp:
             )
 
             # Información de la actividad
-            info_text = f"Requiere talla: {'Sí' if actividad.requiere_talla else 'No'}"
+            info_text = f"Requiere talla: {'Sí' if actividad.requiere_talla_vestimenta() else 'No'}"
+            edad_minima = actividad.obtener_edad_minima()
+            if edad_minima is not None:
+                info_text += f" | Edad mínima: {edad_minima} años"
             tk.Label(
                 actividad_frame,
                 text=info_text,
@@ -746,7 +749,7 @@ class ListadoApp:
                     bg="white",
                     fg=COLORES["muy_oscuro"],
                 ).grid(row=0, column=2, padx=5, sticky=tk.W)
-                if actividad.requiere_talla:
+                if actividad.requiere_talla_vestimenta():
                     tk.Label(
                         horario_frame,
                         text="Talla",
@@ -786,7 +789,7 @@ class ListadoApp:
                         bg="white",
                         fg=COLORES["muy_oscuro"],
                     ).grid(row=visitante_row, column=2, padx=5, sticky=tk.W)
-                    if actividad.requiere_talla:
+                    if actividad.requiere_talla_vestimenta():
                         tk.Label(
                             horario_frame,
                             text=visitante.talla_vestimenta or "N/A",

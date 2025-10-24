@@ -64,10 +64,8 @@ class ServicioInscripcion:
         if not resultado_validacion.exitoso:
             return resultado_validacion
 
-        # Validación 3: Datos de visitantes
-        resultado_validacion = self._validar_visitantes(
-            visitantes, actividad.requiere_talla
-        )
+        # Validación 3: Datos de visitantes y requisitos de la actividad
+        resultado_validacion = self._validar_visitantes(visitantes, actividad)
         if not resultado_validacion.exitoso:
             return resultado_validacion
 
@@ -131,14 +129,14 @@ class ServicioInscripcion:
         return ResultadoInscripcion(exitoso=True, mensaje="")
 
     def _validar_visitantes(
-        self, visitantes: List[Visitante], requiere_talla: bool
+        self, visitantes: List[Visitante], actividad: "Actividad"
     ) -> ResultadoInscripcion:
         """
         Valida que todos los visitantes tengan los datos requeridos.
 
         Args:
             visitantes: Lista de visitantes a validar
-            requiere_talla: Si la actividad requiere talla
+            actividad: Actividad para consultar requisitos
 
         Returns:
             ResultadoInscripcion con el resultado de la validación
@@ -168,7 +166,14 @@ class ServicioInscripcion:
                     exitoso=False,
                     mensaje="Todos los visitantes deben tener una edad válida (número positivo).",
                 )
-            if requiere_talla:
+            # Validar edad mínima usando método de consulta
+            if not actividad.es_edad_valida(visitante.edad):
+                return ResultadoInscripcion(
+                    exitoso=False,
+                    mensaje=f"Todos los visitantes deben tener al menos {actividad.obtener_edad_minima()} años para participar en esta actividad.",
+                )
+            # Validar talla usando método de consulta
+            if actividad.requiere_talla_vestimenta():
                 if (
                     not visitante.talla_vestimenta
                     or visitante.talla_vestimenta not in ["XS", "S", "M", "L", "XL"]
@@ -188,7 +193,11 @@ class Actividad:
     """
 
     def __init__(
-        self, nombre: str, horarios: Dict[str, int], requiere_talla: bool = False
+        self,
+        nombre: str,
+        horarios: Dict[str, int],
+        requiere_talla: bool = False,
+        edad_minima: Optional[int] = None,
     ):
         """
         Inicializa una actividad.
@@ -197,10 +206,12 @@ class Actividad:
             nombre: Nombre de la actividad
             horarios: Diccionario de horarios con cupos disponibles (ej: {"10": 15})
             requiere_talla: Si la actividad requiere talla de vestimenta
+            edad_minima: Edad mínima requerida para participar en la actividad
         """
         self.nombre = nombre
         self.horarios = horarios
         self.requiere_talla = requiere_talla
+        self.edad_minima = edad_minima
         self.inscripciones_por_horario = {h: [] for h in horarios}
 
     def registrar_inscripcion(self, horario: str, visitantes: List[Visitante]) -> None:
@@ -240,6 +251,38 @@ class Actividad:
         """
         return horario in self.horarios
 
+    def requiere_talla_vestimenta(self) -> bool:
+        """
+        Indica si la actividad requiere talla de vestimenta.
+
+        Returns:
+            True si requiere talla, False en caso contrario
+        """
+        return self.requiere_talla
+
+    def obtener_edad_minima(self) -> Optional[int]:
+        """
+        Obtiene la edad mínima requerida para la actividad.
+
+        Returns:
+            Edad mínima o None si no hay restricción
+        """
+        return self.edad_minima
+
+    def es_edad_valida(self, edad: int) -> bool:
+        """
+        Verifica si una edad cumple con el requisito mínimo de la actividad.
+
+        Args:
+            edad: Edad a validar
+
+        Returns:
+            True si la edad es válida para la actividad, False en caso contrario
+        """
+        if self.edad_minima is None:
+            return True
+        return edad >= self.edad_minima
+
 
 class GestorActividades:
     """
@@ -247,9 +290,9 @@ class GestorActividades:
     Mantiene el catálogo de actividades y coordina las inscripciones.
     """
 
-    def __init__(self):
+    def __init__(self, actividades: Dict[str, Actividad] = None):
         """Inicializa el gestor con el catálogo de actividades predefinidas"""
-        self.actividades: Dict[str, Actividad] = {
+        self.actividades: Dict[str, Actividad] = actividades or {
             "Tirolesa": Actividad(
                 "Tirolesa",
                 {
@@ -263,6 +306,7 @@ class GestorActividades:
                     "17": 10,
                 },
                 requiere_talla=True,
+                edad_minima=8,
             ),
             "Palestra": Actividad(
                 "Palestra",
@@ -277,6 +321,7 @@ class GestorActividades:
                     "17": 12,
                 },
                 requiere_talla=True,
+                edad_minima=12,
             ),
             "Jardinería": Actividad(
                 "Jardinería",

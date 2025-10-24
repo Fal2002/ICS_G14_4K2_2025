@@ -12,22 +12,36 @@ def servicio_inscripcion():
 
 @pytest.fixture
 def gestor():
-    """Fixture que proporciona un gestor de actividades vacío"""
-    return GestorActividades()
+    """Fixture que proporciona un gestor de actividades con una actividad de ejemplo"""
+    return GestorActividades(
+        actividades={
+            "Tirolesa": Actividad(
+                nombre="Tirolesa",
+                horarios={"10": 10, "11": 2},
+                requiere_talla=True,
+                edad_minima=8,
+            )
+        }
+    )
 
 
 @pytest.fixture
 def actividad_con_cupos():
     """Fixture que proporciona una actividad con cupos disponibles"""
     return Actividad(
-        nombre="Tirolesa", horarios={"10": 10, "11": 2}, requiere_talla=True
+        nombre="Tirolesa",
+        horarios={"10": 10, "11": 2},
+        requiere_talla=True,
+        edad_minima=8,
     )
 
 
 @pytest.fixture
 def actividad_sin_cupos():
     """Fixture que proporciona una actividad sin cupos"""
-    return Actividad(nombre="Tirolesa", horarios={"10": 0}, requiere_talla=True)
+    return Actividad(
+        nombre="Tirolesa", horarios={"10": 0}, requiere_talla=True, edad_minima=8
+    )
 
 
 @pytest.fixture
@@ -40,7 +54,10 @@ def actividad_sin_talla_requerida():
 def actividad_multiples_horarios():
     """Fixture que proporciona una actividad con múltiples horarios"""
     return Actividad(
-        nombre="Escalada", horarios={"09": 10, "14": 10}, requiere_talla=True
+        nombre="Escalada",
+        horarios={"09": 10, "14": 10},
+        requiere_talla=True,
+        edad_minima=10,
     )
 
 
@@ -72,6 +89,20 @@ def visitante_sin_dni():
 def visitante_sin_edad():
     """Fixture que proporciona un visitante sin edad"""
     return Visitante(nombre="PedroSanchez", dni=22334455, talla_vestimenta="L")
+
+
+@pytest.fixture
+def actividad_con_edad_minima():
+    """Fixture que proporciona una actividad con edad mínima requerida"""
+    return Actividad(
+        nombre="Palestra", horarios={"10": 12}, requiere_talla=True, edad_minima=12
+    )
+
+
+@pytest.fixture
+def visitante_menor_edad_minima():
+    """Fixture que proporciona un visitante menor a la edad mínima"""
+    return Visitante(nombre="Niño Pequeño", dni=99887766, edad=7, talla_vestimenta="XS")
 
 
 class TestInscripcionActividad:
@@ -564,3 +595,95 @@ class TestInscripcionActividad:
             actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
         )
         print("✓ Test pasado: Inscripción rechazada por talla inválida")
+
+    def test_inscripcion_con_edad_menor_a_minima(
+        self,
+        servicio_inscripcion,
+        actividad_con_edad_minima,
+        visitante_menor_edad_minima,
+    ):
+        # ========== ACT ==========
+        print("\n--- Test: Inscripción con edad menor a la mínima ---")
+        print(
+            f"Actividad: {actividad_con_edad_minima.nombre} (Edad mínima: {actividad_con_edad_minima.edad_minima})"
+        )
+        print(
+            f"Visitante: {visitante_menor_edad_minima.nombre} (Edad: {visitante_menor_edad_minima.edad})"
+        )
+
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_con_edad_minima,
+            horario="10",
+            visitantes=[visitante_menor_edad_minima],
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is False
+        assert "al menos 12 años" in resultado.mensaje.lower()
+        assert (
+            actividad_con_edad_minima.obtener_cantidad_cupos_disponibles_horario("10")
+            == 12
+        )
+        print("✓ Test pasado: Inscripción rechazada por edad menor a la mínima")
+
+    def test_inscripcion_con_edad_igual_a_minima(
+        self, servicio_inscripcion, actividad_con_edad_minima
+    ):
+        # ========== ARRANGE ==========
+        print("\n--- Test: Inscripción con edad igual a la mínima ---")
+        visitante_edad_minima = Visitante(
+            nombre="Adolescente Justo", dni=88776655, edad=12, talla_vestimenta="M"
+        )
+        print(
+            f"Actividad: {actividad_con_edad_minima.nombre} (Edad mínima: {actividad_con_edad_minima.edad_minima})"
+        )
+        print(
+            f"Visitante: {visitante_edad_minima.nombre} (Edad: {visitante_edad_minima.edad})"
+        )
+
+        # ========== ACT ==========
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_con_edad_minima,
+            horario="10",
+            visitantes=[visitante_edad_minima],
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is True
+        assert "exitosa" in resultado.mensaje.lower()
+        assert (
+            actividad_con_edad_minima.obtener_cantidad_cupos_disponibles_horario("10")
+            == 11
+        )
+        print("✓ Test pasado: Inscripción exitosa con edad igual a la mínima")
+
+    def test_inscripcion_sin_edad_minima_permite_cualquier_edad(
+        self, servicio_inscripcion, actividad_sin_talla_requerida
+    ):
+        # ========== ARRANGE ==========
+        print("\n--- Test: Inscripción en actividad sin edad mínima ---")
+        visitante_muy_joven = Visitante(nombre="Niño Pequeño", dni=11223344, edad=5)
+        print(
+            f"Actividad: {actividad_sin_talla_requerida.nombre} (Edad mínima: {actividad_sin_talla_requerida.edad_minima})"
+        )
+        print(
+            f"Visitante: {visitante_muy_joven.nombre} (Edad: {visitante_muy_joven.edad})"
+        )
+
+        # ========== ACT ==========
+        resultado = servicio_inscripcion.inscribir_visitantes(
+            actividad=actividad_sin_talla_requerida,
+            horario="11",
+            visitantes=[visitante_muy_joven],
+            acepta_terminos=True,
+        )
+
+        # ========== ASSERT ==========
+        print(f"Resultado: {resultado.mensaje}")
+        assert resultado.exitoso is True
+        assert "exitosa" in resultado.mensaje.lower()
+        print("✓ Test pasado: Inscripción exitosa en actividad sin edad mínima")
