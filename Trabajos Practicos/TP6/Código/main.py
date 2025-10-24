@@ -594,7 +594,7 @@ class ListadoApp:
 
                 tk.Label(
                     actividad_frame,
-                    text=f"{horario}:00 hs",
+                    text=f"{horario} hs",
                     bg="white",
                     fg=COLORES["muy_oscuro"],
                 ).grid(row=horario_row, column=0, padx=5, sticky=tk.W)
@@ -711,7 +711,7 @@ class ListadoApp:
                 # Frame para cada horario
                 horario_frame = tk.LabelFrame(
                     scrollable_frame,
-                    text=f"Horario: {horario}:00 hs ({len(visitantes)} visitante(s))",
+                    text=f"Horario: {horario} hs ({len(visitantes)} visitante(s))",
                     padx=10,
                     pady=10,
                     bg="white",

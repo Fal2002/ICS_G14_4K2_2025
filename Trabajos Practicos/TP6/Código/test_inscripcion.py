@@ -17,7 +17,7 @@ def gestor():
         actividades={
             "Tirolesa": Actividad(
                 nombre="Tirolesa",
-                horarios={"10": 10, "11": 2},
+                horarios={"10:00": 10, "11:00": 2},
                 requiere_talla=True,
                 edad_minima=8,
             )
@@ -30,7 +30,7 @@ def actividad_con_cupos():
     """Fixture que proporciona una actividad con cupos disponibles"""
     return Actividad(
         nombre="Tirolesa",
-        horarios={"10": 10, "11": 2},
+        horarios={"10:00": 10, "11:00": 2},
         requiere_talla=True,
         edad_minima=8,
     )
@@ -40,14 +40,16 @@ def actividad_con_cupos():
 def actividad_sin_cupos():
     """Fixture que proporciona una actividad sin cupos"""
     return Actividad(
-        nombre="Tirolesa", horarios={"10": 0}, requiere_talla=True, edad_minima=8
+        nombre="Tirolesa", horarios={"10:00": 0}, requiere_talla=True, edad_minima=8
     )
 
 
 @pytest.fixture
 def actividad_sin_talla_requerida():
     """Fixture que proporciona una actividad que no requiere talla"""
-    return Actividad(nombre="Paseo en bote", horarios={"11": 5}, requiere_talla=False)
+    return Actividad(
+        nombre="Paseo en bote", horarios={"11:00": 5}, requiere_talla=False
+    )
 
 
 @pytest.fixture
@@ -55,7 +57,7 @@ def actividad_multiples_horarios():
     """Fixture que proporciona una actividad con múltiples horarios"""
     return Actividad(
         nombre="Escalada",
-        horarios={"09": 10, "14": 10},
+        horarios={"09:00": 10, "14:00": 10},
         requiere_talla=True,
         edad_minima=10,
     )
@@ -95,7 +97,7 @@ def visitante_sin_edad():
 def actividad_con_edad_minima():
     """Fixture que proporciona una actividad con edad mínima requerida"""
     return Actividad(
-        nombre="Palestra", horarios={"10": 12}, requiere_talla=True, edad_minima=12
+        nombre="Palestra", horarios={"10:00": 12}, requiere_talla=True, edad_minima=12
     )
 
 
@@ -121,7 +123,7 @@ class TestInscripcionActividad:
         print("Intentando inscribir a actividad 'ActividadInexistente'...")
         resultado = gestor.registrar_inscripcion(
             nombre_actividad="ActividadInexistente",
-            horario="10",
+            horario="10:00",
             visitantes=visitantes,
             acepta_terminos=True,
         )
@@ -139,7 +141,7 @@ class TestInscripcionActividad:
         print("\n--- Test: Inscripción exitosa con un visitante ---")
         print(f"Actividad: {actividad_con_cupos.nombre}, Horario: 10:00")
         print(
-            f"Cupos disponibles antes: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10')}"
+            f"Cupos disponibles antes: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10:00')}"
         )
         print(
             f"Visitante: {visitante_completo.nombre} (DNI: {visitante_completo.dni}, Talla: {visitante_completo.talla_vestimenta})"
@@ -147,7 +149,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_completo],
             acepta_terminos=True,
         )
@@ -155,11 +157,13 @@ class TestInscripcionActividad:
         # ========== ASSERT ==========
         print(f"Resultado: {resultado.mensaje}")
         print(
-            f"Cupos disponibles después: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10')}"
+            f"Cupos disponibles después: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10:00')}"
         )
         assert resultado.exitoso is True
         assert "exitosa" in resultado.mensaje.lower()
-        assert actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 9
+        assert (
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00") == 9
+        )
         print("✓ Test pasado: Inscripción exitosa y cupo actualizado")
 
     def test_inscripcion_exitosa_multiples_visitantes_con_cupo_y_todos_los_campos_validos(
@@ -175,7 +179,7 @@ class TestInscripcionActividad:
         ]
         print(f"Actividad: {actividad_con_cupos.nombre}, Horario: 10:00")
         print(
-            f"Cupos disponibles antes: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10')}"
+            f"Cupos disponibles antes: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10:00')}"
         )
         print(f"Cantidad de visitantes: {len(visitantes)}")
         for v in visitantes:
@@ -184,7 +188,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=visitantes,
             acepta_terminos=True,
         )
@@ -192,11 +196,13 @@ class TestInscripcionActividad:
         # ========== ASSERT ==========
         print(f"Resultado: {resultado.mensaje}")
         print(
-            f"Cupos disponibles después: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10')}"
+            f"Cupos disponibles después: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('10:00')}"
         )
         assert resultado.exitoso is True
         assert "exitosa" in resultado.mensaje.lower()
-        assert actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 8
+        assert (
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00") == 8
+        )
         print("✓ Test pasado: Inscripción múltiple exitosa y cupos actualizados")
 
     def test_inscripcion_fallida_sin_cupo_un_visitante(
@@ -206,13 +212,13 @@ class TestInscripcionActividad:
         print("\n--- Test: Inscripción fallida por falta de cupos ---")
         print(f"Actividad: {actividad_sin_cupos.nombre}, Horario: 10:00")
         print(
-            f"Cupos disponibles: {actividad_sin_cupos.obtener_cantidad_cupos_disponibles_horario('10')}"
+            f"Cupos disponibles: {actividad_sin_cupos.obtener_cantidad_cupos_disponibles_horario('10:00')}"
         )
         print(f"Visitante: {visitante_completo.nombre}")
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_sin_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_completo],
             acepta_terminos=True,
         )
@@ -221,7 +227,9 @@ class TestInscripcionActividad:
         print(f"Resultado: {resultado.mensaje}")
         assert resultado.exitoso is False
         assert "cupos" in resultado.mensaje.lower()
-        assert actividad_sin_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 0
+        assert (
+            actividad_sin_cupos.obtener_cantidad_cupos_disponibles_horario("10:00") == 0
+        )
         print("✓ Test pasado: Inscripción rechazada por falta de cupos")
 
     def test_inscripcion_fallida_por_cupo_insuficiente_para_multiples_visitantes(
@@ -242,7 +250,7 @@ class TestInscripcionActividad:
         ]
         print(f"Actividad: {actividad_con_cupos.nombre}, Horario: 10:00")
         print(
-            f"Cupos disponibles antes: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('11')}"
+            f"Cupos disponibles antes: {actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario('11:00')}"
         )
         print(f"Cantidad de visitantes: {len(visitantes)}")
         for v in visitantes:
@@ -251,7 +259,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="11",
+            horario="11:00",
             visitantes=visitantes,
             acepta_terminos=True,
         )
@@ -261,7 +269,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "cupos" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por cupo insuficiente")
 
@@ -279,7 +288,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_sin_talla],
             acepta_terminos=True,
         )
@@ -289,7 +298,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "talla" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por falta de talla")
 
@@ -305,12 +315,12 @@ class TestInscripcionActividad:
             f"Visitante: {visitante_sin_talla.nombre} (Talla: {visitante_sin_talla.talla_vestimenta})"
         )
         print(
-            f"Cupos disponibles antes: {actividad_sin_talla_requerida.obtener_cantidad_cupos_disponibles_horario('11')}"
+            f"Cupos disponibles antes: {actividad_sin_talla_requerida.obtener_cantidad_cupos_disponibles_horario('11:00')}"
         )
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_sin_talla_requerida,
-            horario="11",
+            horario="11:00",
             visitantes=[visitante_sin_talla],
             acepta_terminos=True,
         )
@@ -318,13 +328,13 @@ class TestInscripcionActividad:
         # ========== ASSERT ==========
         print(f"Resultado: {resultado.mensaje}")
         print(
-            f"Cupos disponibles después: {actividad_sin_talla_requerida.obtener_cantidad_cupos_disponibles_horario('11')}"
+            f"Cupos disponibles después: {actividad_sin_talla_requerida.obtener_cantidad_cupos_disponibles_horario('11:00')}"
         )
         assert resultado.exitoso is True
         assert "exitosa" in resultado.mensaje.lower()
         assert (
             actividad_sin_talla_requerida.obtener_cantidad_cupos_disponibles_horario(
-                "11"
+                "11:00"
             )
             == 4
         )
@@ -343,7 +353,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_multiples_horarios,
-            horario="12",  # Horario inválido
+            horario="12:00",  # Horario inválido
             visitantes=[visitante_completo],
             acepta_terminos=True,
         )
@@ -354,13 +364,13 @@ class TestInscripcionActividad:
         assert "horario no válido" in resultado.mensaje.lower()
         assert (
             actividad_multiples_horarios.obtener_cantidad_cupos_disponibles_horario(
-                "09"
+                "09:00"
             )
             == 10
         )
         assert (
             actividad_multiples_horarios.obtener_cantidad_cupos_disponibles_horario(
-                "14"
+                "14:00"
             )
             == 10
         )
@@ -376,7 +386,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_completo],
             acepta_terminos=False,  # No acepta términos
         )
@@ -386,7 +396,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "términos" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por no aceptar términos")
 
@@ -400,7 +411,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_sin_nombre],
             acepta_terminos=True,
         )
@@ -410,7 +421,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "nombre" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por falta de nombre")
 
@@ -424,7 +436,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_sin_dni],
             acepta_terminos=True,
         )
@@ -434,7 +446,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "dni" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por falta de DNI")
 
@@ -448,7 +461,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_sin_edad],
             acepta_terminos=True,
         )
@@ -458,7 +471,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "edad" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por falta de edad")
 
@@ -472,7 +486,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[],
             acepta_terminos=True,
         )
@@ -482,7 +496,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "al menos un visitante" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por falta de visitantes")
 
@@ -499,7 +514,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_nombre_invalido],
             acepta_terminos=True,
         )
@@ -509,7 +524,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "nombre válido" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por nombre inválido")
 
@@ -526,7 +542,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_dni_invalido],
             acepta_terminos=True,
         )
@@ -536,7 +552,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "dni válido" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por DNI inválido")
 
@@ -553,7 +570,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_edad_invalida],
             acepta_terminos=True,
         )
@@ -563,7 +580,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "edad válida" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por edad inválida")
 
@@ -582,7 +600,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_cupos,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_talla_invalida],
             acepta_terminos=True,
         )
@@ -592,7 +610,8 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "talla de vestimenta" in resultado.mensaje.lower()
         assert (
-            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10") == 10
+            actividad_con_cupos.obtener_cantidad_cupos_disponibles_horario("10:00")
+            == 10
         )
         print("✓ Test pasado: Inscripción rechazada por talla inválida")
 
@@ -613,7 +632,7 @@ class TestInscripcionActividad:
 
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_edad_minima,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_menor_edad_minima],
             acepta_terminos=True,
         )
@@ -623,7 +642,9 @@ class TestInscripcionActividad:
         assert resultado.exitoso is False
         assert "al menos 12 años" in resultado.mensaje.lower()
         assert (
-            actividad_con_edad_minima.obtener_cantidad_cupos_disponibles_horario("10")
+            actividad_con_edad_minima.obtener_cantidad_cupos_disponibles_horario(
+                "10:00"
+            )
             == 12
         )
         print("✓ Test pasado: Inscripción rechazada por edad menor a la mínima")
@@ -646,7 +667,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_con_edad_minima,
-            horario="10",
+            horario="10:00",
             visitantes=[visitante_edad_minima],
             acepta_terminos=True,
         )
@@ -656,7 +677,9 @@ class TestInscripcionActividad:
         assert resultado.exitoso is True
         assert "exitosa" in resultado.mensaje.lower()
         assert (
-            actividad_con_edad_minima.obtener_cantidad_cupos_disponibles_horario("10")
+            actividad_con_edad_minima.obtener_cantidad_cupos_disponibles_horario(
+                "10:00"
+            )
             == 11
         )
         print("✓ Test pasado: Inscripción exitosa con edad igual a la mínima")
@@ -677,7 +700,7 @@ class TestInscripcionActividad:
         # ========== ACT ==========
         resultado = servicio_inscripcion.inscribir_visitantes(
             actividad=actividad_sin_talla_requerida,
-            horario="11",
+            horario="11:00",
             visitantes=[visitante_muy_joven],
             acepta_terminos=True,
         )
