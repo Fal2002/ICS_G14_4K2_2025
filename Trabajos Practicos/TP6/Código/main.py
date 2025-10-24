@@ -178,7 +178,7 @@ class InscripcionApp:
         self.num_visitantes_spinbox = ttk.Spinbox(
             main_frame,
             from_=1,
-            to=10,
+            to=100,
             textvariable=self.num_visitantes_var,
             width=10,
             command=self.actualizar_campos_visitantes,
@@ -286,6 +286,9 @@ class InscripcionApp:
             if num_visitantes < 1:
                 num_visitantes = 1
                 self.num_visitantes_var.set("1")
+            elif num_visitantes > 100:
+                num_visitantes = 100
+                self.num_visitantes_var.set("100")
         except ValueError:
             return
 
